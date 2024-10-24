@@ -23,6 +23,8 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private RefreshTokenService refreshTokenService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -46,10 +48,14 @@ public class UserService {
             user.setPassword(hashedPassword);
             userRepository.save(user);
 
-            Authentication auth = authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+            authManager
+                    .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
             Map<String, String> tokenResponse = new HashMap<>();
-            String token = jwtService.generateJwt(auth);
+
+            String token = jwtService.generateJwt(request.getEmail());
+            String refresh = refreshTokenService.createToken(user);
             tokenResponse.put("token", token);
+            tokenResponse.put("refreshToken", refresh);
             return tokenResponse;
         } catch (Exception e) {
             throw new RuntimeException("Invalid credentials");
@@ -58,14 +64,17 @@ public class UserService {
 
     public Map<String, String> loginUser(UserLogin request) {
         try {
-            Authentication auth = authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+            Authentication auth = authManager
+                    .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
             Map<String, String> tokenResponse = new HashMap<>();
-            String token = jwtService.generateJwt(auth);
+            String token = jwtService.generateJwt(request.getEmail());
+            String currentUserEmail = auth.getName();
             tokenResponse.put("token", token);
+            tokenResponse.put("refreshToken",
+                    refreshTokenService.createToken(userRepository.findByEmail(currentUserEmail)));
             return tokenResponse;
         } catch (Exception e) {
             throw new IncorrectCredentialsException("Incorrect email or password");
         }
     }
-    
 }

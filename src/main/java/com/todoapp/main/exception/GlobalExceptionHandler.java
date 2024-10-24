@@ -37,4 +37,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<Object> handleUnauthorizedException(UnauthorizedException ex, WebRequest request) {
+        Map<String, String> body = new HashMap<>();
+        body.put("message", ex.getMessage());
+        
+        return new ResponseEntity<>(body, HttpStatus.UNAUTHORIZED);
+    }
+
 }

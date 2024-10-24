@@ -30,9 +30,11 @@ import com.todoapp.main.utils.RSAKeyProperties;
 public class SecurityConfig {
 
     private final RSAKeyProperties keys;
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
 
-    public SecurityConfig(RSAKeyProperties keys) {
+    public SecurityConfig(RSAKeyProperties keys, CustomAuthenticationEntryPoint authenticationEntryPoint) {
         this.keys = keys;
+        this.authenticationEntryPoint = authenticationEntryPoint;
     }
 
     @Bean
@@ -53,12 +55,12 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/user/register").permitAll()
-                        .requestMatchers("/api/user/login").permitAll()
+                        .requestMatchers("/api/user/**").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .formLogin(Customizer.withDefaults())
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+                .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(authenticationEntryPoint));
 
         return http.build();
     }

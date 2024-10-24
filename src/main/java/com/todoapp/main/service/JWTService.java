@@ -3,7 +3,6 @@ package com.todoapp.main.service;
 import java.time.Instant;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -15,17 +14,16 @@ public class JWTService {
     @Autowired
     private JwtEncoder jwtEncoder;
 
-    public String generateJwt(Authentication auth) {
+    public String generateJwt(String email) {
 
         Instant now = Instant.now();
-
-        String email = auth.getName();
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("self")
                 .issuedAt(now)
-                .subject(auth.getName())
+                .subject(email)
                 .claim("email", email)
+                .expiresAt(now.plusSeconds(60 * 60 * 24))
                 .build();
 
         return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
