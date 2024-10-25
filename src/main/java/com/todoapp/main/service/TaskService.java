@@ -142,4 +142,28 @@ public class TaskService {
                 task.getDescription()));
     }
 
+    public Page<TaskResponseDto> filterTasks(int page, int size, String filter) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserEmail = authentication.getName();
+
+        User user = userRepository.findByEmail(currentUserEmail);
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found with email: " + currentUserEmail);
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Task> tasksPage;
+        if (filter != null && !filter.isEmpty()) {
+            tasksPage = taskRepository.findByUserAndDescriptionOrTitleContaining(pageable, user, filter, filter);
+        } else {
+            tasksPage = taskRepository.findByUser(pageable, user);
+        }
+
+        return tasksPage.map(task -> new TaskResponseDto(
+                task.getId(),
+                task.getTitle(),
+                task.getDescription()));
+    }
+
 }

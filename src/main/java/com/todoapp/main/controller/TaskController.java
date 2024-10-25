@@ -50,12 +50,23 @@ public class TaskController {
     public HttpEntity<PagedModel<EntityModel<TaskResponseDto>>> getTasks(
             @RequestParam int page,
             @RequestParam int size,
-            @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false, defaultValue = "asc") String sortDirection) {
+            @RequestParam(required = false, name = "sort") String sortBy,
+            @RequestParam(required = false, defaultValue = "asc", name = "direction") String sortDirection) {
         Page<TaskResponseDto> tasksPage = taskService.getTasks(page, size, sortBy, sortDirection);
 
         PagedModel<EntityModel<TaskResponseDto>> pagedModel = assembler.toModel(tasksPage);
 
+        return ResponseEntity.ok(pagedModel);
+    }
+
+    @GetMapping("/filter")
+    public HttpEntity<PagedModel<EntityModel<TaskResponseDto>>> filterTasks(
+            @RequestParam int page,
+            @RequestParam int size,
+            @RequestParam(required = false, name = "filter") String descriptionFilter) {
+        Page<TaskResponseDto> filteredTasks = taskService.filterTasks(page, size, descriptionFilter);
+
+        PagedModel<EntityModel<TaskResponseDto>> pagedModel = assembler.toModel(filteredTasks);
         return ResponseEntity.ok(pagedModel);
     }
 
